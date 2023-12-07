@@ -17,7 +17,7 @@ try:
         exit(1)
 except FileNotFoundError:
     try:
-        file = open("../data/database.json", 'x')
+        file = open("../data/database.json", 'w')
     except FileNotFoundError:
         sys.stderr.write(
             "Error: Unable to create file '../data/database.json'\n")
