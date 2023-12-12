@@ -29,7 +29,7 @@ logging.basicConfig(
 )
 
 
-async def check_nodes(context: ContextTypes.DEFAULT_TYPE):
+async def check_nodes(context):
     for mix_id in DATABASE:
         try:
             current = query.query_api(mix_id)
@@ -44,19 +44,35 @@ async def check_nodes(context: ContextTypes.DEFAULT_TYPE):
                 chat_id=CHAT_ID, text=query.message(DATABASE, current, warnings))
 
 
-async def update_node(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=CHAT_ID, text='updating node info')
+async def update_node(update, context):
+    for mix_id in context.args:
+        try:
+            current = query.query_api(mix_id)
+            node = DATABASE[mix_id]
+        except ValueError:
+            await context.bot.send_message(chat_id=CHAT_ID, text=f'Failed to \
+                                           update info on node{mix_id}')
+            continue
+        node['location']['country_name'] = current['location']['country_name']
+        node['mix_node']['host'] = current['mix_node']['host']
+        node['operating_cost']['amount'] = current['operating_cost']['amount']
+        node['profit_margin_percent'] = current['profit_margin_percent']
+        DATABASE[mix_id] = node
+        await context.bot.send_message(
+            chat_id=CHAT_ID, text=f'updated mixnode {mix_id}')
+    with open('../data/database.json', 'w') as mod_file:
+        mod_file.write(json.dumps(DATABASE))
 
 
-async def add_node(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def add_node(update, context):
     await context.bot.send_message(chat_id=CHAT_ID, text='adding node')
 
 
-async def del_node(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def del_node(update, context):
     await context.bot.send_message(chat_id=CHAT_ID, text='deleting node')
 
 
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def help(update, context):
     await context.bot.send_message(chat_id=CHAT_ID, text='help message')
 
 application = Application.builder().token(TOKEN).build()
