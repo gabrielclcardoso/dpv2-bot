@@ -5,7 +5,7 @@ import sys
 API_ENDPOINT = 'https://explorer.nymtech.net/api/v1/mix-node/'
 
 with open('../data/database.json') as file:
-    database = json.load(file)['mixnodes']
+    database = json.load(file)
 
 
 def query_api(mix_id):
@@ -23,11 +23,7 @@ def query_api(mix_id):
 
 def compare_info(current):
     changed_parameters = []
-    initial = database[mix_id]
-    try:
-        current = query_api(mix_id)
-    except ValueError:
-        return changed_parameters.append('fail')
+    initial = database[str(current['mix_id'])]
     if current['location']['country_name'] != initial['location']['country_name']:
         changed_parameters.append('location')
     if current['mix_node']['host'] != initial['mix_node']['host']:
@@ -44,31 +40,29 @@ def compare_info(current):
 
 
 def send_warnings(current, warnings):
-    initial = database[mix_id]
-    message = 'Warnings for mixnode ' + str(current['mix_id']) + ' | ' + \
+    initial = database[str(current['mix_id'])]
+    message = 'Warnings for mixnode ' + \
+        str(current['mix_id']) + ' | ' + \
         current['mix_node']['identity_key'] + '\n'
     if 'location' in warnings:
-        message += \
-            ('🌐 Location changed from ' + initial['location']['country_name']
-             + ' to ' + current['location']['country_name'] + '\n')
+        message += ('🌐 Location changed from ' +
+                    initial['location']['country_name'] + ' to ' +
+                    current['location']['country_name'] + '\n')
     if 'host' in warnings:
-        message += \
-            ('🌐 Host changed from ' + initial['mix_node']['host'] + ' to ' +
-             current['mix_node']['host'] + '\n')
+        message += ('🌐 Host changed from ' + initial['mix_node']['host'] +
+                    ' to ' + current['mix_node']['host'] + '\n')
     if 'operating_cost' in warnings:
-        message += \
-            ('💰 Operating cost changed from ' +
-             str(int(initial['operating_cost']['amount']) / 1000000) + ' to ' +
-             str(int(current['operating_cost']['amount']) / 1000000) + '\n')
+        message += ('💰 Operating cost changed from ' +
+                    str(int(initial['operating_cost']['amount']) / 1000000) +
+                    ' to ' + str(int(current['operating_cost']['amount']) /
+                                 1000000) + '\n')
     if 'profit_margin' in warnings:
-        message += \
-            ('💰 Profit margin changed from ' +
-             initial['profit_margin_percent'] + ' to ' +
-             current['profit_margin_percent'] + '\n')
+        message += ('💰 Profit margin changed from ' +
+                    initial['profit_margin_percent'] + ' to ' +
+                    current['profit_margin_percent'] + '\n')
     if 'saturation' in warnings:
-        message += \
-            ('✅ Saturation reached ' + str(current['stake_saturation']) +
-             ' surpassing the 70% mark\n')
+        message += ('✅ Saturation reached ' + str(current['stake_saturation'])
+                    + ' surpassing the 70% mark\n')
     if 'uptime' in warnings:
         message += (
             '❌ Node is having a bad performance with an average routing ' +
@@ -77,14 +71,14 @@ def send_warnings(current, warnings):
     print(message)
 
 
-for mix_id in database:
-    try:
-        current = query_api(mix_id)
-    except ValueError:
-        sys.stderr.write('Error fetching info for node ' + mix_id)
-        continue
-    warnings = compare_info(mix_id)
-    if warnings.__len__() == 0:
-        continue
-    else:
-        send_warnings(current, warnings)
+# for mix_id in database:
+#    try:
+#        current = query_api(mix_id)
+#    except ValueError:
+#        sys.stderr.write('Error fetching info for node ' + mix_id)
+#        continue
+#    warnings = compare_info(current)
+#    if warnings.__len__() == 0:
+#        continue
+#    else:
+#        send_warnings(current, warnings)
