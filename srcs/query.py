@@ -4,9 +4,6 @@ import sys
 
 API_ENDPOINT = 'https://explorer.nymtech.net/api/v1/mix-node/'
 
-with open('../data/database.json') as file:
-    database = json.load(file)
-
 
 def query_api(mix_id):
     try:
@@ -21,7 +18,7 @@ def query_api(mix_id):
     return json.loads(response.content)
 
 
-def compare_info(current):
+def compare_info(database, current):
     changed_parameters = []
     initial = database[str(current['mix_id'])]
     if current['location']['country_name'] != initial['location']['country_name']:
@@ -39,11 +36,11 @@ def compare_info(current):
     return changed_parameters
 
 
-def send_warnings(current, warnings):
+def message(database, current, warnings):
     initial = database[str(current['mix_id'])]
     message = 'Warnings for mixnode ' + \
         str(current['mix_id']) + ' | ' + \
-        current['mix_node']['identity_key'] + '\n'
+        current['mix_node']['identity_key'] + '\n\n'
     if 'location' in warnings:
         message += ('🌐 Location changed from ' +
                     initial['location']['country_name'] + ' to ' +
@@ -68,17 +65,4 @@ def send_warnings(current, warnings):
             '❌ Node is having a bad performance with an average routing ' +
             'score of ' + str(current['avg_uptime']) +
             '% which is below 50%\n')
-    print(message)
-
-
-# for mix_id in database:
-#    try:
-#        current = query_api(mix_id)
-#    except ValueError:
-#        sys.stderr.write('Error fetching info for node ' + mix_id)
-#        continue
-#    warnings = compare_info(current)
-#    if warnings.__len__() == 0:
-#        continue
-#    else:
-#        send_warnings(current, warnings)
+    return message
