@@ -24,7 +24,7 @@ except FileNotFoundError:
         exit(1)
 
 # Filling databse
-database = json.loads('{"mixnodes": {}}')
+database = json.loads('{}')
 for i in range(1, sys.argv.__len__()):
     try:
         response = requests.get(API_ENDPOINT + sys.argv[i])
@@ -37,6 +37,6 @@ for i in range(1, sys.argv.__len__()):
                          " on " + API_ENDPOINT + sys.argv[i] + '\n')
         continue
     mixnode = json.loads(response.content)
-    database['mixnodes'][mixnode['mix_id']] = mixnode
+    database[mixnode['mix_id']] = mixnode
     print(str(i) + '/' + str(sys.argv.__len__() - 1))
 file.write(json.dumps(database))
