@@ -32,10 +32,18 @@ async def has_permissions(update, context):
     try:
         ADMINS = await application.bot.get_chat_administrators(CHAT_ID)
     except:
-        await context.bot.send_message(chat_id=CHAT_ID, text='unable to check permissions for this command')
+        await context.bot.send_message(
+            chat_id=CHAT_ID,
+            text='unable to check permissions for this command',
+            reply_to_message_id=update.message.message_id
+        )
         return False
     if update.effective_user not in (admin.user for admin in ADMINS):
-        await context.bot.send_message(chat_id=CHAT_ID, text='only admins can run this command')
+        await context.bot.send_message(
+            chat_id=CHAT_ID,
+            text='only admins can run this command',
+            reply_to_message_id=update.message.message_id
+        )
         return False
     return True
 
@@ -52,7 +60,9 @@ async def check_nodes(context):
             continue
         else:
             await context.bot.send_message(
-                chat_id=CHAT_ID, text=query.message(DATABASE, current, warnings))
+                chat_id=CHAT_ID, text=query.message(
+                    DATABASE, current, warnings)
+            )
 
 
 async def update_node(update, context):
@@ -60,20 +70,30 @@ async def update_node(update, context):
         return
     for mix_id in context.args:
         if mix_id not in DATABASE:
-            await context.bot.send_message(chat_id=CHAT_ID, text=f'Mixnode {mix_id} is not on the database')
+            await context.bot.send_message(
+                chat_id=CHAT_ID,
+                text=f'Mixnode {mix_id} is not on the database',
+                reply_to_message_id=update.message.message_id
+            )
             continue
         try:
             current = query.query_api(mix_id)
             node = DATABASE[mix_id]
         except:
-            await context.bot.send_message(chat_id=CHAT_ID, text=f'Failed to update mixnode {mix_id}')
+            await context.bot.send_message(
+                chat_id=CHAT_ID, text=f'Failed to update mixnode {mix_id}',
+                reply_to_message_id=update.message.message_id
+            )
             continue
         node['location']['country_name'] = current['location']['country_name']
         node['mix_node']['host'] = current['mix_node']['host']
         node['operating_cost']['amount'] = current['operating_cost']['amount']
         node['profit_margin_percent'] = current['profit_margin_percent']
         DATABASE[mix_id] = node
-        await context.bot.send_message(chat_id=CHAT_ID, text=f'Updated mixnode {mix_id}')
+        await context.bot.send_message(
+            chat_id=CHAT_ID, text=f'Updated mixnode {mix_id}',
+            reply_to_message_id=update.message.message_id
+        )
     with open('../data/database.json', 'w') as mod_file:
         mod_file.write(json.dumps(DATABASE))
 
@@ -83,14 +103,23 @@ async def add_node(update, context):
         return
     for mix_id in context.args:
         if mix_id in DATABASE:
-            await context.bot.send_message(chat_id=CHAT_ID, text=f'Mixnode {mix_id} already inside the database')
+            await context.bot.send_message(
+                chat_id=CHAT_ID, text=f'Mixnode {mix_id} already inside the database',
+                reply_to_message_id=update.message.message_id
+            )
             continue
         try:
             mixnode = query.query_api(mix_id)
             DATABASE[mix_id] = mixnode
-            await context.bot.send_message(chat_id=CHAT_ID, text=f'Added mixnode {mix_id}')
+            await context.bot.send_message(
+                chat_id=CHAT_ID, text=f'Added mixnode {mix_id}',
+                reply_to_message_id=update.message.message_id
+            )
         except:
-            await context.bot.send_message(chat_id=CHAT_ID, text=f'Failed to add mixnode {mix_id}')
+            await context.bot.send_message(
+                chat_id=CHAT_ID, text=f'Failed to add mixnode {mix_id}',
+                reply_to_message_id=update.message.message_id
+            )
     with open('../data/database.json', 'w') as mod_file:
         mod_file.write(json.dumps(DATABASE))
 
@@ -100,13 +129,22 @@ async def del_node(update, context):
         return
     for mix_id in context.args:
         if mix_id not in DATABASE:
-            await context.bot.send_message(chat_id=CHAT_ID, text=f'Mixnode {mix_id} is not in the database')
+            await context.bot.send_message(
+                chat_id=CHAT_ID, text=f'Mixnode {mix_id} is not in the database',
+                reply_to_message_id=update.message.message_id
+            )
             continue
         try:
             del DATABASE[mix_id]
-            await context.bot.send_message(chat_id=CHAT_ID, text=f'Deleted mixnode {mix_id}')
+            await context.bot.send_message(
+                chat_id=CHAT_ID, text=f'Deleted mixnode {mix_id}',
+                reply_to_message_id=update.message.message_id
+            )
         except KeyError:
-            await context.bot.send_message(chat_id=CHAT_ID, text=f'Failed to delete mixnode {mix_id}')
+            await context.bot.send_message(
+                chat_id=CHAT_ID, text=f'Failed to delete mixnode {mix_id}',
+                reply_to_message_id=update.message.message_id
+            )
     with open('../data/database.json', 'w') as mod_file:
         mod_file.write(json.dumps(DATABASE))
 
