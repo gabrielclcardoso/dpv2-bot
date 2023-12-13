@@ -28,6 +28,18 @@ logging.basicConfig(
 )
 
 
+async def has_permissions(update, context):
+    try:
+        ADMINS = await application.bot.get_chat_administrators(CHAT_ID)
+    except:
+        await context.bot.send_message(chat_id=CHAT_ID, text='unable to check permissions for this command')
+        return False
+    if update.effective_user not in (admin.user for admin in ADMINS):
+        await context.bot.send_message(chat_id=CHAT_ID, text='only admins can run this command')
+        return False
+    return True
+
+
 async def check_nodes(context):
     for mix_id in DATABASE:
         try:
@@ -44,6 +56,8 @@ async def check_nodes(context):
 
 
 async def update_node(update, context):
+    if not await has_permissions(update, context):
+        return
     for mix_id in context.args:
         if mix_id not in DATABASE:
             await context.bot.send_message(chat_id=CHAT_ID, text=f'Mixnode {mix_id} is not on the database')
@@ -65,6 +79,8 @@ async def update_node(update, context):
 
 
 async def add_node(update, context):
+    if not await has_permissions(update, context):
+        return
     for mix_id in context.args:
         if mix_id in DATABASE:
             await context.bot.send_message(chat_id=CHAT_ID, text=f'Mixnode {mix_id} already inside the database')
@@ -80,6 +96,8 @@ async def add_node(update, context):
 
 
 async def del_node(update, context):
+    if not await has_permissions(update, context):
+        return
     for mix_id in context.args:
         if mix_id not in DATABASE:
             await context.bot.send_message(chat_id=CHAT_ID, text=f'Mixnode {mix_id} is not in the database')
@@ -97,7 +115,6 @@ async def help(update, context):
     await context.bot.send_message(chat_id=CHAT_ID, text='help message')
 
 application = Application.builder().token(TOKEN).build()
-
 application.add_handler(CommandHandler('update', update_node))
 application.add_handler(CommandHandler('add', add_node))
 application.add_handler(CommandHandler('delete', del_node))
