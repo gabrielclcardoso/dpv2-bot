@@ -209,6 +209,6 @@ application.add_handler(CommandHandler('database', send_data))
 application.add_handler(MessageHandler(filters.COMMAND, help))
 
 job_queue = application.job_queue
-job_queue.run_repeating(check_nodes, interval=60, first=1)
+job_queue.run_repeating(check_nodes, interval=(60 * 60 * 24), first=1)
 
 application.run_polling()
