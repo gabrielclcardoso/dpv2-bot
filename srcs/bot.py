@@ -40,6 +40,19 @@ logging.basicConfig(
 
 
 async def has_permissions(update, context):
+    if update.message.chat.id != CHAT_ID:
+        await context.bot.send_message(
+            update.effective_chat.id, 'No private commands allowed ;)',
+            reply_to_message_id=update.message.message_id
+        )
+        await context.bot.send_message(
+            chat_id=CHAT_ID,
+            text='The following command was just tried in a different chat:',
+        )
+        await context.bot.forward_message(
+            CHAT_ID, update.effective_chat.id, update.message.message_id
+        )
+        return False
     try:
         ADMINS = await application.bot.get_chat_administrators(CHAT_ID)
     except:
