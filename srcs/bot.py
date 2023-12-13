@@ -1,10 +1,21 @@
-from telegram.ext import CommandHandler, Application
+from telegram.ext import CommandHandler, Application, filters, MessageHandler
 import logging
 import json
 import os
 import sys
 import query
 
+help_str = '''
+Available commands:\n
+/help
+Prints out instructions\n
+/update {mix_ids separated by space}
+Updates monitored information about the mixode(s) on the databse\n
+/add {mix_ids separated by space}
+Adds mixode(s) to the databse of monitored mixnodes\n
+/delete {mix_ids separated by space}
+Deletes mixode(s) from the databse of monitored mixnodes\n
+'''
 try:
     TOKEN = os.environ['TOKEN']
 except KeyError:
@@ -150,13 +161,16 @@ async def del_node(update, context):
 
 
 async def help(update, context):
-    await context.bot.send_message(chat_id=CHAT_ID, text='help message')
+    await context.bot.send_message(
+        chat_id=CHAT_ID, text=help_str,
+        reply_to_message_id=update.message.message_id
+    )
 
 application = Application.builder().token(TOKEN).build()
 application.add_handler(CommandHandler('update', update_node))
 application.add_handler(CommandHandler('add', add_node))
 application.add_handler(CommandHandler('delete', del_node))
-application.add_handler(CommandHandler('help', help))
+application.add_handler(MessageHandler(filters.COMMAND, help))
 
 job_queue = application.job_queue
 job_queue.run_repeating(check_nodes, interval=60, first=1)
