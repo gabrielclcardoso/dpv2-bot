@@ -1,5 +1,4 @@
-from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes, Application
+from telegram.ext import CommandHandler, Application
 import logging
 import json
 import os
@@ -46,26 +45,39 @@ async def check_nodes(context):
 
 async def update_node(update, context):
     for mix_id in context.args:
+        if mix_id not in DATABASE:
+            await context.bot.send_message(chat_id=CHAT_ID, text=f'mixnode {mix_id} is not on the database')
+            continue
         try:
             current = query.query_api(mix_id)
             node = DATABASE[mix_id]
-        except ValueError:
-            await context.bot.send_message(chat_id=CHAT_ID, text=f'Failed to \
-                                           update info on node{mix_id}')
+        except:
+            await context.bot.send_message(chat_id=CHAT_ID, text=f'failed to update mixnode {mix_id}')
             continue
         node['location']['country_name'] = current['location']['country_name']
         node['mix_node']['host'] = current['mix_node']['host']
         node['operating_cost']['amount'] = current['operating_cost']['amount']
         node['profit_margin_percent'] = current['profit_margin_percent']
         DATABASE[mix_id] = node
-        await context.bot.send_message(
-            chat_id=CHAT_ID, text=f'updated mixnode {mix_id}')
+        await context.bot.send_message(chat_id=CHAT_ID, text=f'updated mixnode {mix_id}')
     with open('../data/database.json', 'w') as mod_file:
         mod_file.write(json.dumps(DATABASE))
 
 
 async def add_node(update, context):
-    await context.bot.send_message(chat_id=CHAT_ID, text='adding node')
+    for mix_id in context.args:
+        if mix_id in DATABASE:
+            await context.bot.send_message(chat_id=CHAT_ID, text=f'mixnode {mix_id} already inside the database')
+            continue
+        try:
+            mixnode = query.query_api(mix_id)
+        except:
+            await context.bot.send_message(chat_id=CHAT_ID, text=f'failed to add mixnode {mix_id}')
+            continue
+        DATABASE[mixnode['mix_id']] = mixnode
+        await context.bot.send_message(chat_id=CHAT_ID, text=f'added mixnode {mix_id}')
+    with open('../data/database.json', 'w') as mod_file:
+        mod_file.write(json.dumps(DATABASE))
 
 
 async def del_node(update, context):
@@ -83,6 +95,6 @@ application.add_handler(CommandHandler('delete', del_node))
 application.add_handler(CommandHandler('help', help))
 
 job_queue = application.job_queue
-job_queue.run_repeating(check_nodes, interval=20, first=1)
+job_queue.run_repeating(check_nodes, interval=60, first=1)
 
 application.run_polling()

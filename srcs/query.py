@@ -11,6 +11,7 @@ def query_api(mix_id):
     except requests.exceptions.ConnectionError:
         sys.stderr.write('Error: Unable to reach -> ' +
                          API_ENDPOINT + mix_id + '\n')
+        raise
     if response.status_code != 200:
         sys.stderr.write('Error: Got response ' + str(response.status_code) +
                          ' on ' + API_ENDPOINT + mix_id + '\n')
