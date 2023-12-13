@@ -15,6 +15,8 @@ Updates monitored information about the mixode(s) on the databse\n
 Adds mixode(s) to the databse of monitored mixnodes\n
 /delete {mix_ids separated by space}
 Deletes mixode(s) from the databse of monitored mixnodes\n
+/database
+Sends the current database that's being monitored
 '''
 try:
     TOKEN = os.environ['TOKEN']
@@ -40,7 +42,7 @@ logging.basicConfig(
 
 
 async def has_permissions(update, context):
-    if update.message.chat.id != CHAT_ID:
+    if str(update.message.chat.id) != CHAT_ID:
         await context.bot.send_message(
             update.effective_chat.id, 'No private commands allowed ;)',
             reply_to_message_id=update.message.message_id
@@ -181,6 +183,16 @@ async def del_node(update, context):
         mod_file.write(json.dumps(DATABASE))
 
 
+async def send_data(update, context):
+    if not await has_permissions(update, context):
+        return
+    await context.bot.send_document(
+        CHAT_ID,
+        open('../data/database.json', 'r'),
+        reply_to_message_id=update.message.message_id
+    )
+
+
 async def help(update, context):
     await context.bot.send_message(
         CHAT_ID,
@@ -192,6 +204,7 @@ application = Application.builder().token(TOKEN).build()
 application.add_handler(CommandHandler('update', update_node))
 application.add_handler(CommandHandler('add', add_node))
 application.add_handler(CommandHandler('delete', del_node))
+application.add_handler(CommandHandler('database', send_data))
 application.add_handler(MessageHandler(filters.COMMAND, help))
 
 job_queue = application.job_queue
