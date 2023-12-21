@@ -18,6 +18,9 @@ Deletes mixode(s) from the databse of monitored mixnodes\n
 /database
 Sends the current database that's being monitored
 '''
+
+VERSION = ''
+
 try:
     TOKEN = os.environ['TOKEN']
 except KeyError:
@@ -76,13 +79,19 @@ async def has_permissions(update, context):
 
 
 async def check_nodes(context):
+    if not VERSION:
+        await context.bot.send_message(
+            CHAT_ID,
+            'Current Version not set, please set it with the /version\
+            command'
+        )
     for mix_id in DATABASE:
         try:
             current = query.query_api(mix_id)
         except ValueError:
             sys.stderr.write('Error fetching info for node ' + mix_id)
             continue
-        warnings = query.compare_info(DATABASE, current)
+        warnings = query.compare_info(DATABASE, current, VERSION)
         if warnings.__len__() == 0:
             continue
         else:
@@ -184,6 +193,33 @@ async def del_node(update, context):
         mod_file.write(json.dumps(DATABASE))
 
 
+async def set_version(update, context):
+    if not await has_permissions(update, context):
+        return
+    if len(context.args) > 1:
+        await context.bot.send_message(
+            update.effective_chat.id,
+            'To many arguments provided to the command',
+            reply_to_message_id=update.message.message_id
+        )
+        return
+    if len(context.args[0].split('.')) != 3:
+        await context.bot.send_message(
+            CHAT_ID,
+            'Version is malformed please set it correctly with the /version\
+            command',
+            reply_to_message_id=update.message.message_id
+        )
+        return
+    global VERSION
+    VERSION = context.args[0]
+    await context.bot.send_message(
+        CHAT_ID,
+        'Version updated',
+        reply_to_message_id=update.message.message_id
+    )
+
+
 async def send_data(update, context):
     if not await has_permissions(update, context):
         return
@@ -206,6 +242,7 @@ application.add_handler(CommandHandler('update', update_node))
 application.add_handler(CommandHandler('add', add_node))
 application.add_handler(CommandHandler('delete', del_node))
 application.add_handler(CommandHandler('database', send_data))
+application.add_handler(CommandHandler('version', set_version))
 application.add_handler(MessageHandler(filters.COMMAND, help))
 
 job_queue = application.job_queue

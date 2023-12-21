@@ -5,6 +5,21 @@ import sys
 API_ENDPOINT = 'https://explorer.nymtech.net/api/v1/mix-node/'
 
 
+def outdated_version(version, current):
+    if not version:
+        return False
+    version_arr = version.split('.')
+    current_arr = current.split('.')
+    if len(current_arr) != 3:
+        return True
+    current_nbr = int(current_arr[len(current_arr) - 1])
+    version_nbr = int(version_arr[len(version_arr) - 1])
+    if version_nbr - current_nbr > 2 or version_nbr - current_nbr < -1:
+        return True
+    else:
+        return False
+
+
 def query_api(mix_id):
     try:
         response = requests.get(API_ENDPOINT + mix_id)
@@ -19,7 +34,7 @@ def query_api(mix_id):
     return json.loads(response.content)
 
 
-def compare_info(database, current):
+def compare_info(database, current, version):
     changed_parameters = []
     initial = database[str(current['mix_id'])]
     if current['location']['country_name'] != initial['location']['country_name']:
@@ -34,14 +49,17 @@ def compare_info(database, current):
         changed_parameters.append('saturation')
     if current['avg_uptime'] < 50:
         changed_parameters.append('uptime')
+    if outdated_version(version, current['mix_node']['version']):
+        changed_parameters.append('version')
+
     return changed_parameters
 
 
 def message(database, current, warnings):
     initial = database[str(current['mix_id'])]
-    message = 'Warnings for mixnode ' + \
-        str(current['mix_id']) + ' | ' + \
-        current['mix_node']['identity_key'] + '\n\n'
+    message = ('Warnings for mixnode ' +
+               str(current['mix_id']) + ' | ' +
+               current['mix_node']['identity_key'] + '\n\n')
     if 'location' in warnings:
         message += ('🌐 Location changed from ' +
                     initial['location']['country_name'] + ' to ' +
@@ -66,4 +84,8 @@ def message(database, current, warnings):
             '❌ Node is having a bad performance with an average routing ' +
             'score of ' + str(current['avg_uptime']) +
             '% which is below 50%\n')
+    if 'version' in warnings:
+        message += ('❌ Node is running on an outdated version, the version ' +
+                    'being ran by the node is ' +
+                    f'{current["mix_node"]["version"]}\n')
     return message
