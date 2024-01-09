@@ -16,7 +16,9 @@ Adds mixode(s) to the databse of monitored mixnodes\n
 /delete {mix_ids separated by space}
 Deletes mixode(s) from the databse of monitored mixnodes\n
 /database
-Sends the current database that's being monitored
+Sends the current database that's being monitored\n
+/version
+Sets the current version of the binary
 '''
 
 VERSION = ''
