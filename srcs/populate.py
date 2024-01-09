@@ -12,20 +12,24 @@ if sys.argv.__len__() <= 1:
 
 # File checking
 try:
-    if os.stat("../data/database.json").st_size != 0:
-        sys.stderr.write("Error: Database already populated\n")
-        exit(1)
+    if not os.path.exists('../data/database.json'):
+        open("../data/database.json", 'x')
+    if os.stat("../data/database.json").st_size == 0:
+        database = json.loads('{}')
+    else:
+        with open("../data/database.json", 'r+') as data:
+            database = json.load(data)
+    file = open("../data/database.json", 'w')
 except FileNotFoundError:
-    try:
-        file = open("../data/database.json", 'w')
-    except FileNotFoundError:
-        sys.stderr.write(
-            "Error: Unable to create file '../data/database.json'\n")
-        exit(1)
+    sys.stderr.write(
+        "Error: Unable to create file '../data/database.json'\n")
+    exit(1)
 
 # Filling databse
-database = json.loads('{}')
 for i in range(1, sys.argv.__len__()):
+    if sys.argv[i] in database:
+        print("Mixnode " + sys.argv[i] + " already on the database")
+        continue
     try:
         response = requests.get(API_ENDPOINT + sys.argv[i])
     except requests.exceptions.ConnectionError:
