@@ -34,7 +34,12 @@ except KeyError:
     sys.stderr.write("CHAT_ID envrionment variable not set.\n")
     exit(1)
 try:
-    with open('../data/database.json') as file:
+    PATH = os.environ['DATABASE_PATH']
+except KeyError:
+    sys.stderr.write("DATABASE_PATH envrionment variable not set.\n")
+    exit(1)
+try:
+    with open(PATH + '/database.json') as file:
         DATABASE = json.load(file)
 except:
     sys.stderr.write("Unable to load database")
@@ -134,7 +139,7 @@ async def update_node(update, context):
             f'Updated mixnode {mix_id}',
             reply_to_message_id=update.message.message_id
         )
-    with open('../data/database.json', 'w') as mod_file:
+    with open(PATH + '/database.json', 'w') as mod_file:
         mod_file.write(json.dumps(DATABASE))
 
 
@@ -163,7 +168,7 @@ async def add_node(update, context):
                 f'Failed to add mixnode {mix_id}',
                 reply_to_message_id=update.message.message_id
             )
-    with open('../data/database.json', 'w') as mod_file:
+    with open(PATH + '/database.json', 'w') as mod_file:
         mod_file.write(json.dumps(DATABASE))
 
 
@@ -191,7 +196,7 @@ async def del_node(update, context):
                 f'Failed to delete mixnode {mix_id}',
                 reply_to_message_id=update.message.message_id
             )
-    with open('../data/database.json', 'w') as mod_file:
+    with open(PATH + '/database.json', 'w') as mod_file:
         mod_file.write(json.dumps(DATABASE))
 
 
@@ -227,7 +232,7 @@ async def send_data(update, context):
         return
     await context.bot.send_document(
         update.effective_chat.id,
-        open('../data/database.json', 'r'),
+        open(PATH + '/database.json', 'r'),
         reply_to_message_id=update.message.message_id
     )
 
