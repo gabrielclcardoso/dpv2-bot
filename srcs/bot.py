@@ -17,7 +17,7 @@ Adds mixode(s) to the databse of monitored mixnodes\n
 Deletes mixode(s) from the databse of monitored mixnodes\n
 /database
 Sends the current database that's being monitored\n
-/version
+/version {current_version}
 Sets the current version of the binary
 '''
 
