@@ -45,7 +45,7 @@ def compare_info(database, current, version):
         changed_parameters.append('operating_cost')
     if current['profit_margin_percent'] != initial['profit_margin_percent']:
         changed_parameters.append('profit_margin')
-    if current['stake_saturation'] > 0.7:
+    if current['stake_saturation'] > 0.95:
         changed_parameters.append('saturation')
     if current['avg_uptime'] < 50:
         changed_parameters.append('uptime')
