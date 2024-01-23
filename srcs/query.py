@@ -78,7 +78,7 @@ def message(database, current, warnings):
                     current['profit_margin_percent'] + '\n')
     if 'saturation' in warnings:
         message += ('✅ Saturation reached ' + str(current['stake_saturation'])
-                    + ' surpassing the 70% mark\n')
+                    + ' surpassing the 95% mark\n')
     if 'uptime' in warnings:
         message += (
             '❌ Node is having a bad performance with an average routing ' +
