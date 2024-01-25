@@ -47,7 +47,7 @@ def compare_info(database, current, version):
         changed_parameters.append('profit_margin')
     if current['stake_saturation'] > 0.95:
         changed_parameters.append('saturation')
-    if current['avg_uptime'] < 50:
+    if current['avg_uptime'] < 70:
         changed_parameters.append('uptime')
     if outdated_version(version, current['mix_node']['version']):
         changed_parameters.append('version')
@@ -83,7 +83,7 @@ def message(database, current, warnings):
         message += (
             '❌ Node is having a bad performance with an average routing ' +
             'score of ' + str(current['avg_uptime']) +
-            '% which is below 50%\n')
+            '% which is below 70%\n')
     if 'version' in warnings:
         message += ('❌ Node is running on an outdated version, the version ' +
                     'being ran by the node is ' +
